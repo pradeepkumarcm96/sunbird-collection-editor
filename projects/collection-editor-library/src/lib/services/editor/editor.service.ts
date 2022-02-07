@@ -167,7 +167,7 @@ export class EditorService {
     return formFields;
   }
 
-  updateCollection(collectionId, event?) {
+  updateCollection(collectionId, event: any = {}) {
     let objType = this.configService.categoryConfig[this.editorConfig.config.objectType];
     let url = this.configService.urlConFig.URLS[this.editorConfig.config.objectType];
     let requestBody = {
@@ -181,8 +181,9 @@ export class EditorService {
       url = this.configService.urlConFig.URLS[this.editorConfig.context['collectionObjectType']];
 
       requestBody = event.requestBody;
-      requestBody.request[objType].lastPublishedBy = this.editorConfig.context.user.id;
-    } else {
+      requestBody.request[objType]['lastPublishedBy'] = this.editorConfig.context.user.id;
+    }
+    else {
       const fieldsObj = this.getFieldsToUpdate(collectionId);
       requestBody = {
         request: {
@@ -249,8 +250,8 @@ export class EditorService {
         }
       }
     };
-    const publishData =  _.get(event, 'publishData');
-    if (publishData) {
+   const publishData =  _.get(event, 'publishData');
+   if(publishData) {
     requestBody.request[objType] = { ...requestBody.request[objType], ...publishData };
    }
     const option = {
@@ -325,21 +326,20 @@ export class EditorService {
     const instance = this;
     this.data = {};
     const data = this.treeService.getFirstChild();
-    const clonedNodeModified = _.cloneDeep(this.treeService.treeCache.nodesModified);
     return {
-      nodesModified: clonedNodeModified,
-      hierarchy: instance._toFlatObj(data)
+      nodesModified: this.treeService.treeCache.nodesModified,
+      hierarchy: instance.getHierarchyObj(data)
     };
   }
 
-  _toFlatObj(data, questionId?, selectUnitId?, parentId?) {
+  getHierarchyObj(data, questionId?, selectUnitId?, parentId?) {
     const instance = this;
     if (data && data.data) {
+      const relationalMetadata = this.getRelationalMetadataObj(data.children);
       instance.data[data.data.id] = {
         name: data.title,
-        children: _.map(data.children, (child) => {
-          return child.data.id;
-        }),
+        children: _.map(data.children, (child) => child.data.id),
+        relationalMetadata,
         root: data.data.root
       };
       if (questionId && selectUnitId && selectUnitId === data.data.id) {
@@ -358,14 +358,13 @@ export class EditorService {
           delete instance.data[data.data.id];
       }
       _.forEach(data.children, (collection) => {
-        instance._toFlatObj(collection, questionId, selectUnitId, parentId);
+        instance.getHierarchyObj(collection, questionId, selectUnitId, parentId);
       });
     }
     return instance.data;
   }
-
-
-  _toFlatObjFromHierarchy(data) {
+  
+ _toFlatObjFromHierarchy(data) {
     const instance = this;
     if (data && data.children) {
       instance.data[data.identifier] = {
@@ -382,6 +381,19 @@ export class EditorService {
     return instance.data;
   }
 
+  getRelationalMetadataObj(data) {
+    let relationalMetadata = {};
+    _.forEach(data, (child) => {
+      if (_.get(child, 'data.metadata.relationalMetadata')) {
+        relationalMetadata = {
+          ...relationalMetadata,
+          [child.data.id]: _.get(child, 'data.metadata.relationalMetadata')
+        };
+      }
+    });
+    return relationalMetadata;
+  }
+
   getCategoryDefinition(categoryName, channel, objectType?: any) {
     const req = {
       url: _.get(this.configService.urlConFig, 'URLS.getCategoryDefinition'),
@@ -395,8 +407,6 @@ export class EditorService {
         }
       }
     };
-    console.log('getCategoryDefinition');
-    console.log(req);
     return this.publicDataService.post(req);
   }
   fetchContentListDetails(req) {
@@ -602,15 +612,13 @@ getDependentNodes(identifier) {
   getBranchingLogicByNodeId(identifier) {
     const leafNode = this.treeService.getNodeById(identifier);
     const parentIdentifier = _.get(leafNode, 'parent.data.id');
-    const branchingLogic = this.getBranchingLogicByFolder(parentIdentifier);
-    return branchingLogic;
+    return this.getBranchingLogicByFolder(parentIdentifier);
   }
 
   getBranchingLogicEntry(parentBranchingLogic, identifier) {
-    const branchingEntry =  _.find(parentBranchingLogic, (logic, key) => {
+    return _.find(parentBranchingLogic, (logic, key) => {
       return key === identifier;
     });
-    return branchingEntry;
   }
 
   getFlattenedBranchingLogic(data) {
@@ -632,8 +640,7 @@ getDependentNodes(identifier) {
 
   getPrimaryCategoryName(sectionId) {
     const nodeData = this.treeService.getNodeById(sectionId);
-    const primaryCategory = _.get(nodeData, 'data.primaryCategory');
-    return primaryCategory;
+    return _.get(nodeData, 'data.primaryCategory');
   }
 
 }

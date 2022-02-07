@@ -17,6 +17,7 @@ describe('TranslationsComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(TranslationsComponent);
     component = fixture.componentInstance;
+    component.editorState = {};
     fixture.detectChanges();
   });
 
@@ -24,17 +25,24 @@ describe('TranslationsComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  xit('#editorDataHandler() should call editorDataHandler for question', () => {
-    component.editorState = mockData.editorState;
-    component.editorState.question=mockData.editorState;
-    component.editorDataHandler(mockData.eventData, 'question');
-    expect(component.editorState).toBeDefined();
-  });
-  xit('#editorDataHandler() should call editorDataHandler for solution', () => {
-    component.editorState = mockData.editorState;
+  it('#editorDataHandler() should call editorDataHandler for solution', () => {
+    spyOn(component,'editorDataHandler').and.callThrough();
     component.editorState.solutions=mockData.editorState;
     component.editorDataHandler(mockData.eventData, 'solution');
-    expect(component.editorState).toBeDefined();
+    expect(component.editorDataHandler).toHaveBeenCalledWith(mockData.eventData, 'solution');
+  });
+
+  it('#editorDataHandler() should call editorDataHandler for question', () => {
+    spyOn(component,'editorDataHandler').and.callThrough();
+    component.editorDataHandler(mockData.eventData, 'question');
+    expect(component.editorDataHandler).toHaveBeenCalledWith(mockData.eventData, 'question');
+    expect(component.editorState.question).toBe(mockData.eventData.body);
+  });
+
+  it('#editorDataHandler() should call editorDataHandler without type', () => {
+    spyOn(component,'editorDataHandler').and.callThrough();
+    component.editorDataHandler(mockData.eventData,'test');
+    expect(component.editorDataHandler).toHaveBeenCalledWith(mockData.eventData, 'test');
   });
 
 });

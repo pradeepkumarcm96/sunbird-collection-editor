@@ -76,7 +76,6 @@ export class FancyTreeComponent implements OnInit, AfterViewInit, OnDestroy {
         this.bulkUploadProcessingStatus = false;
       }
     });
-
     this.initialize();
   }
 
@@ -127,7 +126,7 @@ export class FancyTreeComponent implements OnInit, AfterViewInit, OnDestroy {
         folder: this.isFolder(child),
         children: childTree,
         root: false,
-        extraClasses: this.nodeParentDependentMap[child.identifier],
+        extraClasses: !_.isEmpty(this.nodeParentDependentMap[child.identifier]) ? this.nodeParentDependentMap[child.identifier] : '',
         icon: this.getIconClass(child, data.level)
       });
       if (child.visibility === 'Parent') {
@@ -307,10 +306,8 @@ export class FancyTreeComponent implements OnInit, AfterViewInit, OnDestroy {
         // check if span of node already rendered
         if (!$nodeSpan.data('rendered')) {
           this.attachContextMenu(node);
-
           // span rendered
           $nodeSpan.data('rendered', true);
-
         }
       }
     };
@@ -601,7 +598,6 @@ export class FancyTreeComponent implements OnInit, AfterViewInit, OnDestroy {
       ...(!_.isUndefined(branchingLogic) && {branchingLogic})
     };
     this.treeService.updateTreeNodeMetadata(metadata, id, primaryCategoryName);
-    console.log(this.treeService.treeCache);
   }
 
   getCategoryInstanceData(data) {

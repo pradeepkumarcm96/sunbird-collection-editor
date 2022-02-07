@@ -6,16 +6,18 @@ import { NO_ERRORS_SCHEMA, ChangeDetectorRef } from '@angular/core';
 import { TelemetryInteractDirective } from '../../directives/telemetry-interact/telemetry-interact.directive';
 import { EditorTelemetryService } from '../../services/telemetry/telemetry.service';
 import { config, treeData, tree, editorConfig, TargetNodeMockData,
-  CurrentNodeMockData, mockTreeService, mockData } from './fancy-tree.component.spec.data';
+  CurrentNodeMockData, mockTreeService, mockData, observationWithRubricsMockData } from './fancy-tree.component.spec.data';
 import { Router } from '@angular/router';
 import { TreeService } from '../../services/tree/tree.service';
 import { ToasterService } from '../../services/toaster/toaster.service';
 import { ConfigService } from '../../services/config/config.service';
 import { SuiModule } from 'ng2-semantic-ui-v9';
+import { HelperService } from 'collection-editor-library/lib/services/helper/helper.service';
+import { BranchingLogic } from '../question/question.component.spec.data';
 describe('FancyTreeComponent', () => {
   let component: FancyTreeComponent;
   let fixture: ComponentFixture<FancyTreeComponent>;
-  let editorService;
+  let editorService,helperService;
   class RouterStub {
     navigate = jasmine.createSpy('navigate');
   }
@@ -66,6 +68,8 @@ describe('FancyTreeComponent', () => {
     expect(component.buildTree).toHaveBeenCalled();
   });
 
+  
+
   it('#addFromLibrary() should call #emitshowLibraryPageEvent()', () => {
     const editorService: EditorService = TestBed.get(EditorService);
     spyOn(editorService, 'emitshowLibraryPageEvent').and.returnValue('showLibraryPage');
@@ -82,6 +86,7 @@ describe('FancyTreeComponent', () => {
   });
 
   it('call #eachNodeActionButton() to verify #visibility for root node', () => {
+    spyOn(component,'eachNodeActionButton').and.callThrough();
     component.config = mockData.config;
     const rootNode = {
       getLevel: () => 1,
@@ -93,6 +98,7 @@ describe('FancyTreeComponent', () => {
     expect(component.visibility.createNew).toBeFalsy();
     expect(component.visibility.addChild).toBeTruthy();
     expect(component.visibility.addSibling).toBeFalsy();
+    expect(component.eachNodeActionButton).toHaveBeenCalled();
   });
 
   it('call #eachNodeActionButton() to verify #visibility for child node', () => {
@@ -290,6 +296,9 @@ describe('FancyTreeComponent', () => {
     spyOn(component, 'dropNode').and.callFake(() => {
       return true;
     });
+    spyOn(editorService,'getDependentNodes').and.callFake(()=>{
+      return {};
+    })
     const node = {};
     component.dragDrop(node, data);
     expect(component.dropNode).toHaveBeenCalled();
@@ -391,5 +400,35 @@ describe('FancyTreeComponent', () => {
 
   })
 
+  it("#moveDependentNodes on the node drag and drop on tree structure",()=>{
+    spyOn(component,'moveDependentNodes').and.callThrough();
+    component.moveDependentNodes(TargetNodeMockData,CurrentNodeMockData);
+    expect(component.moveDependentNodes).toHaveBeenCalled();
+  });
+
+  it('#rearrangeBranchingLogic() should call when drag and drop with branchingLogic is there ', () => {
+    const nodeId = "do_113449672558780416163";
+    const currentSectionId = "do_1134460323602841601200";
+    const targetSectionId = "do_1134460323604971521236";
+    const movingNodeIds=[
+     "do_113449672558780416163",
+     "do_113449775832088576181",
+     "do_113449787008081920183",
+     "do_113449808985628672185",
+     "do_11345671149997260811"
+    ];
+    const dependentNodeIDs = {
+      source: [],
+      target: [
+        "do_113449775832088576181",
+        "do_113449787008081920183",
+        "do_113449808985628672185",
+        "do_11345671149997260811"
+      ]
+    }
+    spyOn(component,'rearrangeBranchingLogic').and.callThrough();
+    component.rearrangeBranchingLogic(nodeId,currentSectionId,targetSectionId,dependentNodeIDs,movingNodeIds);
+    expect(component.rearrangeBranchingLogic).toHaveBeenCalled();
+  });
 
 });

@@ -41,7 +41,6 @@ import { CacheSessionStorage } from 'ng2-cache-service/dist/src/services/storage
 import { QumlPlayerComponent } from './components/quml-player/quml-player.component';
 import { DialcodeComponent } from './components/dialcode/dialcode.component';
 import { DialcodeService } from './services/dialcode/dialcode.service';
-import { AnswerDateComponent } from './components/answer-date/answer-date.component';
 import { QuestionOptionSubMenuComponent } from './components/question-option-sub-menu/question-option-sub-menu.component';
 import { CsvUploadComponent } from './components/csv-upload/csv-upload.component';
 import { ManageCollaboratorComponent } from './components/manage-collaborator/manage-collaborator.component';
@@ -51,14 +50,16 @@ import { PublishChecklistComponent } from './components/publish-checklist/publis
 import { BulkUploadComponent  } from './components/bulk-upload/bulk-upload.component';
 import { PlainTreeComponent } from './components/plain-tree/plain-tree.component';
 import { AssignPageNumberComponent } from './components/assign-page-number/assign-page-number.component';
+import { RelationalMetadataComponent } from './components/relational-metadata/relational-metadata.component';
+import { AppLoaderComponent } from './components/app-loader/app-loader.component';
 @NgModule({
   declarations: [CollectionEditorLibraryComponent, InterpolatePipe, SanitizeHtmlPipe, ContentplayerPageComponent, EditorComponent, QumlplayerPageComponent,
     HeaderComponent, FancyTreeComponent, MetaFormComponent, LibraryComponent, LibraryFilterComponent, LibraryListComponent,
     QuestionComponent, OptionsComponent, AnswerComponent, CkeditorToolComponent,
     LibraryPlayerComponent, ResourceReorderComponent, SkeletonLoaderComponent, TemplateComponent, TelemetryInteractDirective,
-    AssetBrowserComponent, CollectionIconComponent,
+    AssetBrowserComponent, CollectionIconComponent,RelationalMetadataComponent,
     QumlPlayerComponent, DialcodeComponent, DateFormatPipe, BulkUploadComponent, CsvUploadComponent, ManageCollaboratorComponent,
-    PublishChecklistComponent, AnswerDateComponent, QuestionOptionSubMenuComponent, SliderComponent, TranslationsComponent, PlainTreeComponent, AssignPageNumberComponent],
+    PublishChecklistComponent, QuestionOptionSubMenuComponent, SliderComponent, TranslationsComponent, AppLoaderComponent, PlainTreeComponent, AssignPageNumberComponent],
   imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule.forChild([]), SuiModule,
   CommonFormElementsModule, InfiniteScrollModule, HttpClientModule, SunbirdPdfPlayerModule, SunbirdVideoPlayerModule,
   QumlLibraryModule, CarouselModule, SunbirdEpubPlayerModule],

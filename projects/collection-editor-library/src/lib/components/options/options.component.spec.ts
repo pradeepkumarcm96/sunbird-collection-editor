@@ -9,16 +9,17 @@ import { ConfigService } from '../../services/config/config.service';
 import { SuiModule } from 'ng2-semantic-ui-v9';
 import { TreeService } from '../../services/tree/tree.service';
 import { treeData } from './../fancy-tree/fancy-tree.component.spec.data';
+import { EditorTelemetryService } from '../../services/telemetry/telemetry.service';
 
 describe('OptionsComponent', () => {
   let component: OptionsComponent;
   let fixture: ComponentFixture<OptionsComponent>;
-  let treeService;
+  let treeService,telemetryService;
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [ HttpClientTestingModule, FormsModule, SuiModule ],
       declarations: [ OptionsComponent, TelemetryInteractDirective ],
-      providers: [ConfigService,TreeService],
+      providers: [ConfigService,TreeService,EditorTelemetryService],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     })
     .compileComponents();
@@ -27,6 +28,7 @@ describe('OptionsComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(OptionsComponent);
     treeService = TestBed.get(TreeService);
+    telemetryService=TestBed.get(EditorTelemetryService);
     component = fixture.componentInstance;
     component.sourcingSettings=sourcingSettingsMock;
     spyOn(treeService, 'setTreeElement').and.callFake((el) => {
@@ -35,6 +37,8 @@ describe('OptionsComponent', () => {
     spyOn(treeService, 'getFirstChild').and.callFake(() => {
       return { data: { metadata: treeData } };
     });
+    component.editorState = mockOptionData.editorOptionData;
+
     // fixture.detectChanges();
   });
 
@@ -68,6 +72,7 @@ describe('OptionsComponent', () => {
     spyOn(component.editorDataOutput, 'emit').and.callThrough();
     component.editorState = mockOptionData.editorOptionData;
     component.editorDataHandler();
+    component.questionPrimaryCategory='Multiselect Multiple Choice Question';
     expect(component.prepareMcqBody).toHaveBeenCalledWith(mockOptionData.editorOptionData);
     expect(component.editorDataOutput.emit).toHaveBeenCalled();
   });
@@ -110,5 +115,25 @@ describe('OptionsComponent', () => {
     component.subMenuChange({index:1,value:'test'},1)
     expect(component.subMenus[0][0].value).toBe('test');
   })
+
+  it('#subMenuConfig() should set on initialize', () => {
+    spyOn(component,'subMenuConfig').and.callThrough();
+    const options = [
+      {
+        "body": "<p>true</p>"
+      }
+    ];
+    component.subMenuConfig(options);
+    expect(component.subMenuConfig).toHaveBeenCalledWith(options)
+  })
+
+  it('#setScore() should call if score is entered', () => {
+    spyOn(component,'setScore').and.callThrough();
+    const value = "20";
+    const scoreIndex = 1;
+    component.setScore(value,scoreIndex);
+    component.editorDataHandler();
+    expect(component.setScore).toHaveBeenCalled();    
+  });
 
 });
