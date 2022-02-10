@@ -86,7 +86,9 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   public isComponenetInitialized = false;
   public unSubscribeShowLibraryPageEmitter: Subscription;
   public sourcingSettings: any;
-  setChildQuestion: any;
+  public setChildQuestion: any;
+  public outcomeDeclaration:any;
+  public levelsArray:any;
   public unsubscribe$ = new Subject<void>();
   onComponentDestroy$ = new Subject<any>();
   constructor(private editorService: EditorService, public treeService: TreeService, private frameworkService: FrameworkService,
@@ -190,11 +192,20 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
     this.helperService.initialize(channel);
   }
 
-  getFrameworkDetails(categoryDefinitionData) {
+  async getFrameworkDetails(categoryDefinitionData) {
     let orgFWIdentifiers: any;
     let targetFWIdentifiers: any;
     let orgFWType: any;
     let targetFWType: any;
+    if (_.get(this.editorConfig, 'config.renderTaxonomy') === true){
+      let orgId = _.get(this.editorConfig, 'context.identifier');
+      let data = await this.editorService.fetchOutComeDeclaration(orgId).toPromise();
+      if (data?.result) {
+        this.outcomeDeclaration = _.get(data?.result, 'questionset.outcomeDeclaration');
+        this.editorService.outcomeDeclaration = this.outcomeDeclaration;
+        this.levelsArray = Object.keys(this.outcomeDeclaration);
+      }
+    }
     orgFWIdentifiers = _.get(categoryDefinitionData, 'result.objectCategoryDefinition.objectMetadata.schema.properties.framework.enum') ||
       _.get(categoryDefinitionData, 'result.objectCategoryDefinition.objectMetadata.schema.properties.framework.default');
     // tslint:disable-next-line:max-line-length
@@ -250,7 +261,6 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
           return { label: framework.name, identifier: framework.identifier };
         });
       }
-
       if (orgFWType && channelFrameworksType && _.isEmpty(difference)) {
         this.frameworkService.frameworkValues = orgFrameworkList;
         this.setEditorForms(categoryDefinitionData);
@@ -287,15 +297,39 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
     this.unitFormConfig = _.get(formsConfigObj, 'unitMetadata.properties');
     this.rootFormConfig = _.get(formsConfigObj, 'create.properties');
     let formData=this.rootFormConfig[0].fields;
+    console.log('setEditorForms');
+    console.log(this.outcomeDeclaration);
+    console.log(this.levelsArray);
+    this.levelsArray.forEach((level, index) => {
+      let obj = {
+        name: this.outcomeDeclaration[level].label,
+        renderingHints: {
+          class: 'grid three-column-grid hidden-sectionName',
+        },
+        fields: this.constructFields(level, index, this.outcomeDeclaration[level].label),
+      };
+      this.unitFormConfig.push(obj);
+    });
     formData.forEach((field) => {
       if (field.code === 'evidenceMimeType') {
         evidenceMimeType = field.range;
         field.options = this.setEvidence;
         field.range = null;
       }
+      if(field.code === 'allowECM'){
+        field.options = this.setAllowEcm;
+      }
       if (field.code === 'ecm') {
         ecm = field.options;
         field.options = this.setEcm;
+      }
+      if(field.code === 'levels'){
+        let defaultValue = [];
+        this.levelsArray.forEach((level) => {
+          defaultValue.push(this.outcomeDeclaration[level].label)
+        });
+        console.log(defaultValue)
+        field.default = defaultValue
       }
     });
     this.libraryComponentInput.searchFormConfig = _.get(formsConfigObj, 'search.properties');
@@ -1117,4 +1151,92 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
     );
     return response;
   }
+
+  constructFields(level,index,labelName) {
+    let levelName=level.toLowerCase();
+    let fieldArray = [
+      {
+        code: levelName,
+        name: levelName,
+        label: `Level ${index+1}`,
+        placeholder: `Level ${index+1}`,
+        description: `Level ${index+1}`,
+        dataType: 'text',
+        inputType: 'text',
+        editable: false,
+        default:labelName,
+        required: true,
+        visible: true,
+        renderingHints: {
+          class: 'sb-g-col-lg-1 required',
+        },
+        validations: [
+          {
+            type: 'maxLength',
+            value: '120',
+            message: 'Entered name is too long',
+          },
+          {
+            type: 'required',
+            message: 'Name is required',
+          },
+        ],
+      },
+      {
+        code: `${levelName}min`,
+        name: `${levelName}min`,
+        label: 'Minimum',
+        placeholder: 'Minimum',
+        description: 'Minimum',
+        dataType: 'text',
+        inputType: 'text',
+        editable: true,
+        required: true,
+        visible: true,
+        renderingHints: {
+          class: 'sb-g-col-lg-1 required',
+        },
+        validations: [
+          {
+            type: 'maxLength',
+            value: '120',
+            message: 'Entered name is too long',
+          },
+          {
+            type: 'required',
+            message: 'Name is required',
+          },
+        ],
+      },
+      {
+        code: `${levelName}man`,
+        name: `${levelName}man`,
+        label: 'Maximum',
+        placeholder: 'Maximum',
+        description: 'Maximum',
+        dataType: 'text',
+        inputType: 'text',
+        editable: true,
+        required: true,
+        visible: true,
+        renderingHints: {
+          class: 'sb-g-col-lg-1 required',
+        },
+        validations: [
+          {
+            type: 'maxLength',
+            value: '120',
+            message: 'Entered name is too long',
+          },
+          {
+            type: 'required',
+            message: 'Name is required',
+          },
+        ],
+      },
+    ];
+    return fieldArray;
+  }
+
+
 }
