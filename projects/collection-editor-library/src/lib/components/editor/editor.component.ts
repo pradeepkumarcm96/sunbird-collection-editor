@@ -297,19 +297,18 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
     this.unitFormConfig = _.get(formsConfigObj, 'unitMetadata.properties');
     this.rootFormConfig = _.get(formsConfigObj, 'create.properties');
     let formData=this.rootFormConfig[0].fields;
-    console.log('setEditorForms');
-    console.log(this.outcomeDeclaration);
-    console.log(this.levelsArray);
-    this.levelsArray.forEach((level, index) => {
-      let obj = {
-        name: this.outcomeDeclaration[level].label,
-        renderingHints: {
-          class: 'grid three-column-grid hidden-sectionName',
-        },
-        fields: this.constructFields(level, index, this.outcomeDeclaration[level].label),
-      };
-      this.unitFormConfig.push(obj);
-    });
+    if (_.get(this.editorConfig, 'config.renderTaxonomy') === true) {
+      this.levelsArray.forEach((level, index) => {
+        let obj = {
+          name: this.outcomeDeclaration[level].label,
+          renderingHints: {
+            class: 'grid three-column-grid hidden-sectionName',
+          },
+          fields: this.constructFields(level, index, this.outcomeDeclaration[level].label),
+        };
+        this.unitFormConfig.push(obj);
+      });
+    }
     formData.forEach((field) => {
       if (field.code === 'evidenceMimeType') {
         evidenceMimeType = field.range;
