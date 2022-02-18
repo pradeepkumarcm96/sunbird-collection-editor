@@ -285,7 +285,10 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
     const formsConfigObj = _.get(categoryDefinitionData, 'result.objectCategoryDefinition.forms');
     this.unitFormConfig = _.get(formsConfigObj, 'unitMetadata.properties');
     this.rootFormConfig = _.get(formsConfigObj, 'create.properties');
-    let formData=this.rootFormConfig[0].fields;
+    let formData;
+    if (this.rootFormConfig.length) {
+      formData = this.rootFormConfig[0].fields || [];
+    }
     formData.forEach((field) => {
       if (field.code === 'evidenceMimeType') {
         evidenceMimeType = field.range;
@@ -893,7 +896,7 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
     this.questionComponentInput = {
       ...this.questionComponentInput,
       questionSetId: this.collectionId,
-      questionId: mode === 'edit' ? this.selectedNodeData.data.metadata.identifier : questionId,
+      questionId: mode === this.selectedNodeData?.data?.metadata?.identifier || questionId,
       type: interactionType,
       setChildQueston:mode === 'edit' ? false : this.setChildQuestion,
       category: questionCategory,
@@ -901,7 +904,7 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       creationMode: mode
     };
 
-    if(mode === 'edit'){
+    if(mode === 'edit' && !_.isEmpty(this.selectedNodeData)){
       this.editorService.selectedChildren = {
         primaryCategory: this.selectedNodeData.data.metadata.primaryCategory,
         interactionType: this.selectedNodeData.data.metadata.interactionTypes[0]
