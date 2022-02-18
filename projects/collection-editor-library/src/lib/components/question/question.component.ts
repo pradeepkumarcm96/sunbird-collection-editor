@@ -197,7 +197,7 @@ export class QuestionComponent implements OnInit, AfterViewInit, OnDestroy {
     //     }
     //   });
     // }
-      const leafFormConfigFields = _.join(_.map(this.questionFormConfig, value => (value.code)), ',');
+      const leafFormConfigFields = _.join(_.map(this.leafFormConfig, value => (value.code)), ',');
       if (!_.isUndefined(this.questionId)) {
         this.questionService.readQuestion(this.questionId, leafFormConfigFields)
           .subscribe((res) => {
