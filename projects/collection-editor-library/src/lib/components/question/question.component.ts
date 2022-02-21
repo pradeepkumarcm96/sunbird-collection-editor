@@ -180,23 +180,25 @@ export class QuestionComponent implements OnInit, AfterViewInit, OnDestroy {
     this.editorService.fetchCollectionHierarchy(this.questionSetId).subscribe((response) => {
       this.questionSetHierarchy = _.get(response, 'result.questionSet');
       const parentId = this.editorService.parentIdentifier ? this.editorService.parentIdentifier : this.questionId;
-    //   if (parentId) {
-    //     this.getParentQuestionOptions(parentId);
-    //   const sectionData = this.treeService.getNodeById(parentId);
-    //   const childerns = _.get(response, 'result.questionSet.children');
-    //   this.sectionPrimaryCategory = _.get(response, 'result.questionSet.primaryCategory');
-    //   this.selectedSectionId = _.get(sectionData, 'data.metadata.parent');
-    //   _.forEach(childerns, (data) => {
-    //     if (data.identifier === this.selectedSectionId) {
-    //       this.branchingLogic = data?.branchingLogic ? data?.branchingLogic : {};
-    //       if (_.get(data?.branchingLogic, `${this.questionId}.source[0]`)) {
-    //         this.isChildQuestion = true;
-    //         this.getParentQuestionOptions(data.branchingLogic[this.questionId].source[0]);
-    //         this.setCondition(data);
-    //       }
-    //     }
-    //   });
-    // }
+      /*
+      if (parentId) {
+        this.getParentQuestionOptions(parentId);
+        const sectionData = this.treeService.getNodeById(parentId);
+        const childerns = _.get(response, 'result.questionSet.children');
+        this.sectionPrimaryCategory = _.get(response, 'result.questionSet.primaryCategory');
+        this.selectedSectionId = _.get(sectionData, 'data.metadata.parent');
+        _.forEach(childerns, (data) => {
+          if (data.identifier === this.selectedSectionId) {
+            this.branchingLogic = data?.branchingLogic ? data?.branchingLogic : {};
+            if (_.get(data?.branchingLogic, `${this.questionId}.source[0]`)) {
+              this.isChildQuestion = true;
+              this.getParentQuestionOptions(data.branchingLogic[this.questionId].source[0]);
+              this.setCondition(data);
+            }
+          }
+        });
+      } */
+
       const leafFormConfigFields = _.join(_.map(this.leafFormConfig, value => (value.code)), ',');
       if (!_.isUndefined(this.questionId)) {
         this.questionService.readQuestion(this.questionId, leafFormConfigFields)
@@ -538,7 +540,7 @@ export class QuestionComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.questionInteractionType === 'choice') {
       const optionValid = _.find(this.editorState.options, option =>
         (option.body === undefined || option.body === '' || option.length > this.setCharacterLimit));
-      if (optionValid || (!this.editorState.answer && this.sourcingSettings.enforceCorrectAnswer)) {
+      if (optionValid || (!this.editorState.answer && this.sourcingSettings?.enforceCorrectAnswer)) {
         this.showFormError = true;
         return;
       } else {
